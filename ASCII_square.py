@@ -1,28 +1,19 @@
-import time
-from functools import lru_cache, wraps
+from functools import lru_cache
+from timer_wrapper import timer
 
 
-def timer(function):    # Function for time measurement called with the decorator @timer
-    @wraps(function)
-    def wrapper(*args, **kwargs):   # Wrapper function to automatically calculate the execution time of ASCII square construction
-        start_time = time.time()
-        result = function(*args, **kwargs)
-        end_time = time.time()
-        print(f"Execution time of {function.__name__}: {end_time - start_time} seconds\n")
-        return result
-
-    return wrapper
-
-
-@lru_cache(maxsize=None)
 @timer
-def ascii_square_construction(n):
-    reference = ord("A")    # Starting character ASCII
-    last_index = n - 1      # Last possible index (any direction) of a square
+@lru_cache(maxsize=None)
+def ascii_square_construction(square_size, starting_character = "A") -> str:
+    reference = ord(starting_character)    # First ASCII character
+    last_index = square_size - 1      # Last possible index (any direction) of a square
 
-    offsets = [min(i, last_index - i) for i in range(n)]    # Precompute offsets
+    offsets = [min(i, last_index - i) for i in range(square_size)]    # Precompute offsets for rows and columns
+    maximum_offset = max(offsets)    # Maximum offset possible (will be <= last_index // 2)
+    ascii_map = [chr(reference + offset) for offset in range(maximum_offset + 1)]    # Precompute the mapping from offset to character.
 
-    rows = (" ".join(chr(reference + min(offsets[i], offsets[j])) for j in range(n)) for i in range(n))
-    return "\n".join(rows)
+    # Build the square rows using the precomputed maping
+    rows = (" ".join(ascii_map[min(row_offset, column_offset)] for column_offset in offsets)
+             for row_offset in offsets)
 
-print(ascii_square_construction(13))    # Call the function to draw ASCII square for a designated dimension
+    return "\n".join(rows)  # Return a constructed square
