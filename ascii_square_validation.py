@@ -7,6 +7,8 @@ def validate_square_size(value):
         size = int(value)
         if size <= 0:
             return False, "Size must be a positive integer."
+        if size > 3000:
+            return False, "Square size must be 3000 or less."
         return True, ""
     except ValueError:
         return False, "Size must be a valid integer."
@@ -14,7 +16,11 @@ def validate_square_size(value):
 
 def validate_size_length(new_value):
     # Allow only up to 5 characters in the square size entry.
-    return len(new_value) <= 5
+    return len(new_value) <= 4
+
+
+def validate_char_length(new_value):
+    return len(new_value) <= 1
 
 
 def validate_starting_character(value):
