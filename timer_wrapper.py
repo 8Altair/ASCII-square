@@ -21,4 +21,3 @@ def timer(function):
 
     wrapper.last_execution_time = None
     return wrapper
-

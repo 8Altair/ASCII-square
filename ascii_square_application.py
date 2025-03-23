@@ -36,7 +36,7 @@ class AsciiSquareApp(tk.Tk):
         self.size_entry = None
         self.execution_time_label = None
 
-        # We'll store the ASCII square here so we can copy it later.
+        # Store the ASCII square here so we can copy it later
         self.current_ascii_square = ""
 
         self.title("ASCII Square")
@@ -52,6 +52,9 @@ class AsciiSquareApp(tk.Tk):
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
     def create_widgets(self):
+        """
+            Create and layout all UI widgets.
+        """
         # Top frame for input controls.
         top_frame = tk.Frame(self, padx=10, pady=10, bg="#add8e6")
         top_frame.pack(fill=tk.X)
@@ -73,7 +76,7 @@ class AsciiSquareApp(tk.Tk):
         starting_char_label.grid(row=1, column=0, sticky="w")
         starting_char_label.bind("<Double-Button-1>", self.copy_text)
 
-        # Limit the Starting Character entry to one character.
+        # Limit the starting character entry to one character.
         vcmd_char = (self.register(validate_char_length), '%P')
         self.char_entry = tk.Entry(left_frame, width=5, validate="key", validatecommand=vcmd_char)
         self.char_entry.insert(0, "A")
@@ -137,16 +140,16 @@ class AsciiSquareApp(tk.Tk):
         self.error_label = tk.Label(self, text="", fg="red")
         self.error_label.pack()
 
-        # -- COPY BUTTON FRAME (centered above canvas).
+        # Copy button (centered above canvas).
         copy_button_frame = tk.Frame(self)
         copy_button_frame.pack(fill=tk.X)
-        self.copy_button = tk.Button(copy_button_frame, text="Copy ASCII Square",
+        self.copy_button = tk.Button(copy_button_frame, text="Copy ASCII square",
                                      command=self.copy_ascii_square)
         # Center the button horizontally:
-        self.copy_button.pack(pady=5, anchor="center")
+        self.copy_button.pack(pady=0, anchor="center")
 
         # Canvas frame with vertical and horizontal scrollbars.
-        canvas_frame = tk.Frame(self, padx=10, pady=10)
+        canvas_frame = tk.Frame(self, padx=10, pady=5)
         canvas_frame.pack(fill=tk.BOTH, expand=True)
         # Pack the scrollbars first.
         self.vertical_scrollbar = tk.Scrollbar(canvas_frame, orient=tk.VERTICAL, width=30)
@@ -164,6 +167,9 @@ class AsciiSquareApp(tk.Tk):
         self.canvas.bind("<B2-Motion>", self.do_pan)
 
     def copy_text(self, event):
+        """
+            Copy text from the widget that was double-clicked and place it in the clipboard.
+        """
         widget = event.widget
         try:
             if widget == self.canvas:
@@ -200,9 +206,13 @@ class AsciiSquareApp(tk.Tk):
         label = tk.Label(message, text="ASCII square copied.", bg="lightyellow", font=("TkDefaultFont", 10))
         label.pack(padx=10, pady=5)
 
-        # Position the popup near the center of the main window:
-        x = self.winfo_rootx() + (self.winfo_width() // 2) - 80
-        y = self.winfo_rooty() + (self.winfo_height() // 2) - 20
+        self.update_idletasks()  # Make sure geometry info is up to date
+
+        # Position the popup to the right of the time label
+        time_label_x = self.execution_time_label.winfo_rootx()
+        time_label_y = self.execution_time_label.winfo_rooty()
+        x = time_label_x + self.execution_time_label.winfo_width() + 10
+        y = time_label_y
         message.geometry(f"+{x}+{y}")
 
         # Destroy after 5 seconds.
@@ -230,6 +240,9 @@ class AsciiSquareApp(tk.Tk):
         self.canvas.bind_all("<Button-5>", self.on_mousewheel)
 
     def on_mousewheel(self, event):
+        """
+            Scroll the canvas vertically based on the mouse wheel movement.
+        """
         region = self.canvas.bbox("all")
         if region:
             region_height = region[3] - region[1]
@@ -241,10 +254,16 @@ class AsciiSquareApp(tk.Tk):
             self.canvas.yview_scroll(3, "units")
 
     def start_pan(self, event):
+        """
+            Pan the canvas based on the movement from the initial pan coordinates.
+        """
         self.pan_start_x = event.x
         self.pan_start_y = event.y
 
     def do_pan(self, event):
+        """
+            Pan the canvas based on the movement from the initial pan coordinates.
+        """
         dx = event.x - self.pan_start_x
         dy = event.y - self.pan_start_y
         # Invert the default behavior: positive dx scrolls right, positive dy scrolls down.
@@ -254,6 +273,9 @@ class AsciiSquareApp(tk.Tk):
         self.pan_start_y = event.y
 
     def generate_square(self):
+        """
+            Generate the ASCII square based on user inputs and display it on the canvas.
+        """
         # Cancel any ongoing snake animation.
         if self.snake_animation_id is not None:
             self.after_cancel(self.snake_animation_id)
@@ -314,7 +336,7 @@ class AsciiSquareApp(tk.Tk):
         try:
             ascii_square = ascii_square_construction(square_size, char_value)
             execution_time = ascii_square_construction.last_execution_time
-            self.current_ascii_square = ascii_square    # Store the full ASCII square for later copying:
+            self.current_ascii_square = ascii_square  # Store the full ASCII square for later copying:
         except Exception as e:
             self.error_label.config(text=str(e))
             return
@@ -324,6 +346,9 @@ class AsciiSquareApp(tk.Tk):
 
     def draw_and_update(self, ascii_square, palette_list, uniform_color, execution_time, use_alternating,
                         use_snake):
+        """
+            Update the execution time label and draw the ASCII square on the canvas.
+        """
         # Update the execution time label.
         if execution_time is not None:
             if execution_time < 1:
@@ -339,8 +364,11 @@ class AsciiSquareApp(tk.Tk):
 
     def draw_square_incremental(self, rows, cell_width, cell_height, start_x, start_y,
                                 palette_list, alternating, snake, uniform_color, row_index=0):
+        """
+            Incrementally draw each row of the ASCII square on the canvas.
+        """
         if row_index >= len(rows):
-            # Finished drawing; update the scroll region if needed.
+            # Finished drawing; update the scroll region if needed
             bbox = self.canvas.bbox("all")
             if bbox:
                 self.canvas.config(scrollregion=(bbox[0] - 4, bbox[1] - 4, bbox[2] + 4, bbox[3] + 4))
@@ -354,7 +382,7 @@ class AsciiSquareApp(tk.Tk):
                 self.animate_snake(palette_list, len(rows))
             return
 
-        # Process a single row.
+        # Process a single row
         row = rows[row_index]
         letters = row.split(" ")
         item_row = []
@@ -370,9 +398,11 @@ class AsciiSquareApp(tk.Tk):
                 fill_color = palette_list[layer % len(palette_list)]
             elif uniform_color is not None:
                 fill_color = uniform_color
+
             item = self.canvas.create_text(x, y, text=letter, anchor="nw",
                                            font=("Courier", 16), fill=fill_color, tags="copyable")
             item_row.append(item)
+
         # Append this row to text_items (initialize if needed)
         if not hasattr(self, "text_items") or self.text_items is None:
             self.text_items = []
@@ -385,6 +415,9 @@ class AsciiSquareApp(tk.Tk):
                                                            row_index + 1))
 
     def draw_square(self, ascii_square, alternating, snake, palette_list, uniform_color):
+        """
+            Clear the canvas and initiate the incremental drawing of the ASCII square.
+        """
         cell_width = 30
         cell_height = 30
         start_x = 24
@@ -400,8 +433,11 @@ class AsciiSquareApp(tk.Tk):
                                      palette_list, alternating, snake, uniform_color)
 
     @staticmethod
-    @lru_cache(maxsize=None)
+    @lru_cache(maxsize=128)
     def get_spiral_order(n):
+        """
+            Return a tuple of (row, col) positions in spiral order for a square of size n.
+        """
         def spiral_generator():
             top, left = 0, 0
             bottom, right = n - 1, n - 1
@@ -425,6 +461,9 @@ class AsciiSquareApp(tk.Tk):
         return tuple(spiral_generator())
 
     def animate_snake(self, palette_list, square_size):
+        """
+            Animate snake mode by rotating the colors of canvas text items.
+        """
         if not self.snake_items:
             return
 
@@ -440,6 +479,9 @@ class AsciiSquareApp(tk.Tk):
         self.snake_animation_id = self.after(delay, lambda: self.animate_snake(palette_list, square_size))
 
     def on_closing(self):
+        """
+            Cancel any scheduled animations and cleanly close the application.
+        """
         # Cancel any scheduled callbacks before quitting.
         if self.snake_animation_id is not None:
             self.after_cancel(self.snake_animation_id)
@@ -451,7 +493,3 @@ class AsciiSquareApp(tk.Tk):
 if __name__ == "__main__":
     app = AsciiSquareApp()
     app.mainloop()
-
-# TODO: I want to implement ASCII rotation limit. Each time an ASCII characther reaches last small letter, it hsould rotate back to capital A. That means it has rotation of onbly letters from alphabet, capital ans small. This implementations includes also changing acceptance for entry filed to only one character, else ignores the rest typed in (as square size limits to only 4 digits).
-# TODO: Look at the caching used in 2 separate palces. I want to know the role of maxsize, and is there a need to limit it instead of putting none?
-# TODO: How to make safe executable file on Windows from my Python files which everyone can run instantly? After explanation write separate Python file that will do that automatically and properly, without consequences so that I can always trigger it for any application quickly.
