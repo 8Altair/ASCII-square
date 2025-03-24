@@ -8,7 +8,7 @@ def validate_square_size(value):
         if size <= 0:
             return False, "Size must be a positive integer."
         if size > 1000:
-            return False, "Square size must be 3000 or less."
+            return False, "Square size must be 1000 or less."
         return True, ""
     except ValueError:
         return False, "Size must be a valid integer."
