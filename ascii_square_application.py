@@ -22,7 +22,6 @@ class AsciiSquareApp(tk.Tk):
         self.alternating_mode = None
         self.snake_mode = None
         self.default_mode = None
-        self.mode = None
         self.text_items = None
         self.vertical_scrollbar = None
         self.horizontal_scrollbar = None
@@ -40,9 +39,12 @@ class AsciiSquareApp(tk.Tk):
         self.current_ascii_square = ""
 
         self.title("ASCII Square")
-        self.geometry("1100x800")  # Set main window size with padding.
+        self.geometry("1100x800")  # Set main window size with padding
 
-        # Initialize snake animation variables.
+        self.mode = tk.StringVar(value="default")
+        self.last_mode = self.mode.get()
+
+        # Initialize snake animation variables
         self.snake_animation_id = None
         self.snake_items = []
         self.spiral_order = []
@@ -55,18 +57,18 @@ class AsciiSquareApp(tk.Tk):
         """
             Create and layout all UI widgets.
         """
-        # Top frame for input controls.
+        # Top frame for input controls
         top_frame = tk.Frame(self, padx=10, pady=10, bg="#add8e6")
         top_frame.pack(fill=tk.X)
 
-        # Left frame: square size and starting character fields.
+        # Left frame: square size and starting character fields
         left_frame = tk.Frame(top_frame, bg="#add8e6")
         left_frame.pack(side=tk.LEFT, padx=10)
         square_size_label = tk.Label(left_frame, text="Square size:", font=("TkDefaultFont", 13), bg="#add8e6")
         square_size_label.grid(row=0, column=0, sticky="w")
         square_size_label.bind("<Double-Button-1>", self.copy_text)
 
-        # Create a validation command so that only 4 characters can be entered.
+        # Create a validation command so that only 4 characters can be entered
         vcmd = (self.register(validate_size_length), '%P')
         self.size_entry = tk.Entry(left_frame, width=5, validate="key", validatecommand=vcmd)
         self.size_entry.insert(0, "13")
@@ -76,13 +78,13 @@ class AsciiSquareApp(tk.Tk):
         starting_char_label.grid(row=1, column=0, sticky="w")
         starting_char_label.bind("<Double-Button-1>", self.copy_text)
 
-        # Limit the starting character entry to one character.
+        # Limit the starting character entry to one character
         vcmd_char = (self.register(validate_char_length), '%P')
         self.char_entry = tk.Entry(left_frame, width=5, validate="key", validatecommand=vcmd_char)
         self.char_entry.insert(0, "A")
         self.char_entry.grid(row=1, column=1, padx=5)
 
-        # Palette dropdown.
+        # Palette dropdown
         palette_frame = tk.Frame(top_frame, bg="#add8e6")
         palette_frame.pack(side=tk.LEFT, padx=10)
         palette_label = tk.Label(palette_frame, text="Color palette:", font=("TkDefaultFont", 13), bg="#add8e6")
@@ -104,7 +106,7 @@ class AsciiSquareApp(tk.Tk):
         self.palette_menu.config(width=12)
         self.palette_menu.grid(row=1, column=0, padx=5)
 
-        # Radio buttons for mode selection.
+        # Radio buttons for mode selection
         mode_frame = tk.Frame(top_frame, bg="#add8e6")
         mode_frame.pack(side=tk.LEFT, padx=10)
         mode_label = tk.Label(mode_frame, text="Mode:", font=("TkDefaultFont", 13), bg="#add8e6")
@@ -114,18 +116,19 @@ class AsciiSquareApp(tk.Tk):
         # Set default selection to "default"
         self.mode = tk.StringVar(value="default")
 
-        self.default_mode = tk.Radiobutton(mode_frame, text="One-color", variable=self.mode, value="default")
+        self.default_mode = tk.Radiobutton(mode_frame, text="One-color", variable=self.mode,
+                                           value="default", command=self.mode_command)
         self.default_mode.pack(anchor="w")
-        self.alternating_mode = tk.Radiobutton(mode_frame, text="Alternating colors", variable=self.mode,
-                                               value="alternating")
-        self.alternating_mode.pack(anchor="w")
-        self.snake_mode = tk.Radiobutton(mode_frame, text="Snake mode", variable=self.mode, value="snake")
-        self.snake_mode.pack(anchor="w")
-        # Bind toggle function so a selected button can be deselected.
-        for radio_button in (self.default_mode, self.alternating_mode, self.snake_mode):
-            radio_button.bind("<Button-1>", self.toggle_mode)
 
-        # Generate button and execution time label.
+        self.alternating_mode = tk.Radiobutton(mode_frame, text="Alternating colors", variable=self.mode,
+                                               value="alternating", command=self.mode_command)
+        self.alternating_mode.pack(anchor="w")
+
+        self.snake_mode = tk.Radiobutton(mode_frame, text="Snake mode", variable=self.mode,
+                                         value="snake", command=self.mode_command)
+        self.snake_mode.pack(anchor="w")
+
+        # Generate button and execution time label
         generate_frame = tk.Frame(top_frame, bg="#add8e6")
         generate_frame.pack(side=tk.LEFT, padx=10)
         self.generate_button = tk.Button(generate_frame, text="Generate", command=self.generate_square)
@@ -133,14 +136,14 @@ class AsciiSquareApp(tk.Tk):
         self.execution_time_label = tk.Label(generate_frame, text="", font=("Arial", 14))
         self.execution_time_label.pack(side=tk.LEFT, padx=10)
 
-        # Bind the Enter key to trigger the generate_square method.
+        # Bind the Enter key to trigger the generate_square method
         self.bind("<Return>", lambda event: self.generate_square())
 
-        # Error label.
+        # Error label
         self.error_label = tk.Label(self, text="", fg="red")
         self.error_label.pack()
 
-        # Copy button (centered above canvas).
+        # Copy button (centered above canvas)
         copy_button_frame = tk.Frame(self)
         copy_button_frame.pack(fill=tk.X)
         self.copy_button = tk.Button(copy_button_frame, text="Copy ASCII square",
@@ -148,10 +151,10 @@ class AsciiSquareApp(tk.Tk):
         # Center the button horizontally:
         self.copy_button.pack(pady=0, anchor="center")
 
-        # Canvas frame with vertical and horizontal scrollbars.
+        # Canvas frame with vertical and horizontal scrollbars
         canvas_frame = tk.Frame(self, padx=10, pady=5)
         canvas_frame.pack(fill=tk.BOTH, expand=True)
-        # Pack the scrollbars first.
+        # Pack the scrollbars first
         self.vertical_scrollbar = tk.Scrollbar(canvas_frame, orient=tk.VERTICAL, width=30)
         self.vertical_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         self.horizontal_scrollbar = tk.Scrollbar(canvas_frame, orient=tk.HORIZONTAL, width=30)
@@ -173,7 +176,7 @@ class AsciiSquareApp(tk.Tk):
         widget = event.widget
         try:
             if widget == self.canvas:
-                # For canvas text items, find the closest item and get its "text" attribute.
+                # For canvas text items, find the closest item and get its "text" attribute
                 item = self.canvas.find_closest(event.x, event.y)[0]
                 text = self.canvas.itemcget(item, "text")
             else:
@@ -196,7 +199,7 @@ class AsciiSquareApp(tk.Tk):
 
     def show_copy_message(self):
         """
-            Pop up a small 'copied' message for 5 seconds.
+            Pop up a small "copied" message for 5 seconds.
         """
         message = tk.Toplevel(self)
         # Remove window decorations:
@@ -218,18 +221,20 @@ class AsciiSquareApp(tk.Tk):
         # Destroy after 5 seconds.
         message.after(5000, message.destroy)
 
-    def toggle_mode(self, event):
+    def mode_command(self):
         """
-            Allow a radiobutton to be deselected if already active.
-            Only allow deselection for snake and alternating modes.
-            In this design the default mode should remain selected unless another is chosen.
+            Toggle behavior for non-default radio buttons.
+            If the clicked radio button is already selected, then reset the selection to "default".
         """
-        widget = event.widget
-        # If the default mode is active, don't allow it to be deselected.
-        if self.mode.get() == widget["value"] and widget["value"] != "default":
-            self.mode.set("")
-            widget.deselect()
-            return "break"
+        current = self.mode.get()
+        # Only allow toggling for non-default modes
+        if current != "default" and self.last_mode == current:
+            # Deselect by reverting to default mode:
+            self.mode.set("default")
+            self.last_mode = "default"
+        else:
+            # Update the last_mode to the current selection.
+            self.last_mode = current
 
     def bind_mousewheel(self):
         """
@@ -266,7 +271,7 @@ class AsciiSquareApp(tk.Tk):
         """
         dx = event.x - self.pan_start_x
         dy = event.y - self.pan_start_y
-        # Invert the default behavior: positive dx scrolls right, positive dy scrolls down.
+        # Invert the default behavior: positive dx scrolls right, positive dy scrolls down
         self.canvas.xview_scroll(int(dx), "units")
         self.canvas.yview_scroll(int(dy), "units")
         self.pan_start_x = event.x
@@ -276,7 +281,7 @@ class AsciiSquareApp(tk.Tk):
         """
             Generate the ASCII square based on user inputs and display it on the canvas.
         """
-        # Cancel any ongoing snake animation.
+        # Cancel any ongoing snake animation
         if self.snake_animation_id is not None:
             self.after_cancel(self.snake_animation_id)
             self.snake_animation_id = None
@@ -303,8 +308,8 @@ class AsciiSquareApp(tk.Tk):
             self.error_label.config(text="Square size must be an integer.")
             return
 
-        if square_size > 10000:
-            self.error_label.config(text="Square size must be 10000 or less.")
+        if square_size > 1000:
+            self.error_label.config(text="Square size must be 1000 or less.")
             return
 
         selected_palette = self.palette.get()
@@ -332,11 +337,11 @@ class AsciiSquareApp(tk.Tk):
 
         uniform_color = palette_hex if use_default else None
 
-        # Synchronously compute the ASCII square.
+        # Synchronously compute the ASCII square
         try:
             ascii_square = ascii_square_construction(square_size, char_value)
             execution_time = ascii_square_construction.last_execution_time
-            self.current_ascii_square = ascii_square  # Store the full ASCII square for later copying:
+            self.current_ascii_square = ascii_square  # Store the full ASCII square for later copying
         except Exception as e:
             self.error_label.config(text=str(e))
             return
@@ -349,7 +354,7 @@ class AsciiSquareApp(tk.Tk):
         """
             Update the execution time label and draw the ASCII square on the canvas.
         """
-        # Update the execution time label.
+        # Update the execution time label
         if execution_time is not None:
             if execution_time < 1:
                 formatted_time = f"{execution_time * 1000:.6f}ms"
@@ -365,7 +370,7 @@ class AsciiSquareApp(tk.Tk):
     def draw_square_incremental(self, rows, cell_width, cell_height, start_x, start_y,
                                 palette_list, alternating, snake, uniform_color, row_index=0):
         """
-            Incrementally draw each row of the ASCII square on the canvas.
+            Incrementally draw each row of the ASCII square on the canvas
         """
         if row_index >= len(rows):
             # Finished drawing; update the scroll region if needed
@@ -470,11 +475,11 @@ class AsciiSquareApp(tk.Tk):
         # Rotate the stored deque of colors (O(1) rotation)
         self.snake_colors.rotate(1)
 
-        # Update each canvas item's fill color using the rotated deque.
+        # Update each canvas item's fill color using the rotated deque
         for item, color in zip(self.snake_items, self.snake_colors):
             self.canvas.itemconfig(item, fill=color)
 
-        # Set delay based on square size.
+        # Set delay based on square size
         delay = 300 if square_size <= 50 else 1000
         self.snake_animation_id = self.after(delay, lambda: self.animate_snake(palette_list, square_size))
 

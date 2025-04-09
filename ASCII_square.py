@@ -20,9 +20,9 @@ def ascii_square_construction(square_size, starting_character="A") -> str:
 
     offsets = [min(i, last_index - i) for i in range(square_size)]  # Precompute offsets for rows and columns
     maximum_offset = max(offsets)  # Maximum offset possible (will be <= last_index // 2)
-    ascii_map = [allowed_chars[(start_index + offset) % total_letters] for offset in range(maximum_offset + 1)]  # Precompute the mapping from offset to character.
+    ascii_map = [allowed_chars[(start_index + offset) % total_letters] for offset in range(maximum_offset + 1)]  # Precompute the mapping from offset to character
 
-    # Build the square rows using the precomputed maping
+    # Build the square rows using the precomputed mapping
     rows = (" ".join(ascii_map[min(row_offset, column_offset)] for column_offset in offsets)
             for row_offset in offsets)
 

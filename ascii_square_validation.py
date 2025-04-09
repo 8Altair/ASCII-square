@@ -15,11 +15,12 @@ def validate_square_size(value):
 
 
 def validate_size_length(new_value):
-    # Allow only up to 5 characters in the square size entry.
+    # Allow only up to 4 characters in the square size entry
     return len(new_value) <= 4
 
 
 def validate_char_length(new_value):
+    # Allow only 1 character in the square size entry
     return len(new_value) <= 1
 
 
