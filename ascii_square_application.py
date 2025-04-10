@@ -302,15 +302,7 @@ class AsciiSquareApp(tk.Tk):
         else:
             self.error_label.config(text="")
 
-        try:
-            square_size = int(size_value)
-        except ValueError:
-            self.error_label.config(text="Square size must be an integer.")
-            return
-
-        if square_size > 1000:
-            self.error_label.config(text="Square size must be 1000 or less.")
-            return
+        square_size = int(size_value)
 
         selected_palette = self.palette.get()
         palette_hex = None
